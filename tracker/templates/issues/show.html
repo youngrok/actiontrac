@@ -1,0 +1,262 @@
+<%inherit file="/layout.html"/>
+<%block name="title">${issue.title} - 행동하라, 시민이여!</%block>
+<%block name="head">
+<script type="text/javascript">
+$(function() {
+    $('.comment-button').click(function() {
+        if ('${request.user.is_authenticated()}' == 'True') {
+            this.parentNode.appendChild($('#form-template')[0])
+            $("#form-template input[name='issue']").val(this.getAttribute('href').split('-')[1])
+            $(this).remove()
+        } else {
+            document.location = '/accounts/login?next=${request.get_full_path()}'
+        }
+        return false
+    })
+    voteHandler = function(isAgree) {
+        $.ajax({
+           type:'POST',
+           url:'/votes/_/create',
+           data:{issue: ${issue.id}, is_agree: isAgree},
+           success: function(msg) {
+               if (msg.status == 'ok') {
+                   $('#vote-score').text(msg.vote_score);
+                   $('#vote-up').unbind('click');
+                   $('#vote-down').unbind('click');
+
+                   $('#vote-up').click(function() {
+                       destroyHandler(msg.vote_id);
+                   });
+                   $('#vote-down').click(function() {
+                       destroyHandler(msg.vote_id);
+                   });
+               }
+               else {
+                   alert('중복 투표 입니다');
+               }
+           },
+           failure: function(msg) {
+               alert('fail');
+           }
+        });
+    }
+
+    destroyHandler = function(id) {
+        $.ajax({
+           type:'POST',
+           url:'/votes/'+id+'/destroy',
+           success: function(msg) {
+               if (msg.status == 'ok') {
+                   $('#vote-score').text(msg.vote_score);
+                   $('#vote-up').unbind('click');
+                   $('#vote-down').unbind('click');
+
+                   $('#vote-up').click(function() {
+                       voteHandler(1);
+                   });
+                   $('#vote-down').click(function() {
+                       voteHandler(0);
+                   });
+               }
+               else {
+                   alert('중복 투표 입니다');
+               }
+           },
+           failure: function(msg) {
+               alert('fail');
+           }
+        });
+    }
+
+    %if not request.user.is_anonymous():
+    $('#vote-up').click(function() {
+       % if user_vote == None:
+        voteHandler(1);
+       % else:
+        destroyHandler(${user_vote.id});
+       % endif
+
+    });
+    $('#vote-down').click(function() {
+        % if user_vote == None:
+        voteHandler(0);
+        % else:
+        destroyHandler(${user_vote.id});
+        %endif
+    });
+    %endif
+})
+</script>
+</%block>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/ko_KR/all.js#xfbml=1&appId=237390709648651";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+<%def name="show_issue(issue, is_action=False)">
+<div class="panel panel-${'default' if is_action else 'info'}">
+    <div class="panel-heading">
+    % if is_action:
+        <h3 class="title">
+            ${issue.title}
+        </h3>
+    % else:
+        <h1 class="title">
+            ${issue.title}
+        </h1>
+    % endif
+    </div>
+    <div class="panel-body">
+        <div class="text-right">
+            % if issue.writer.profile.profile_image:
+                <img class="profile-small" src="${issue.writer.profile.profile_image}">
+            % endif
+            <span class="writer_info">${issue.writer.profile.name}</span>
+            <a href="/issues/${issue.id}/histories" class="date">${humanize.naturaltime(issue.updated)}</a>
+            <a style='border: 1px solid; padding: 4px;' href="/issues/${issue.id}/edit" class="btn btn-default">수정</a></span>
+        </div>
+
+        <div class="content">${issue.content}</div>
+
+        <hr>
+        <div class="">
+            <a href="#" id="vote-up" class="text-success">
+                <i class="fa fa-thumbs-o-up"></i> 좋아요
+                <span id='vote-score'>${issue.vote_score}</span>
+            </a>
+            &nbsp;
+            <a href="#" id="vote-down" class="text-danger">
+                <i class="fa fa-thumbs-o-down"></i> 싫어요
+                <span id='vote-score'>${issue.vote_score}</span>
+            </a>
+            <div style="float: right; vertical-align: bottom;">
+                <span class="twitter">
+                    <a href="https://twitter.com/share" class="twitter-share-button">Tweet</a>
+                    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+                </span>
+                <span class="fb-like" data-href="${request.build_absolute_uri(url('issues.show', issue.id))}" data-layout="button_count" data-action="like" data-show-faces="true" data-share="true" data-colorscheme="light">
+                </span>
+
+            </div>
+        </div>
+        <hr>
+        ##<h4 class="title issue_tags">태그</h4>
+        ##<ul class="issue_tags">
+        ##% for tag in issue.tags.all():
+        ##    <li><a href="/issues?tag=${tag.name}">${tag.name}</a></li>
+        ##% endfor
+        ##</ul>
+        % for comment in issue.comment_set.order_by('updated'):
+            <div class="comment_content">
+                ${comment.content}
+                -
+                <a href="#" class="writer_info">${comment.writer.profile.name}</a>
+                <span class="date">${humanize.naturaltime(comment.updated)}</span>
+            </div>
+            <hr>
+
+        % endfor
+        <div>
+            <a href="#issue-${issue.id}" class="comment-button btn btn-default btn-sm">댓글 쓰기</a>
+        </div>
+    </div>
+</div>
+</%def>
+${show_issue(issue)}
+
+<h2>
+    행동하기
+</h2>
+
+<hr>
+% if issue.action_set.exists():
+    % for action in issue.action_set.all():
+        ${show_issue(action, True)}
+    % endfor
+% else:
+    <div class="alert alert-warning">아직 행동하기로 제안된 것이 없네요. 제안해주세요~</div>
+% endif
+<%namespace name="forms" file="/common/bootstrap_form.html" inheritable="True"/>
+<form class="form" action="${url('actions.create')}" method="post">
+    <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+
+    % for field in action_form.hidden_fields():
+        ${forms.hidden_field(field)}
+    % endfor
+    % for field in action_form.visible_fields():
+        ${forms.form_group(field)}
+    % endfor
+    <input type="submit" value="행동하기 제안 올리기" class="btn btn-primary">
+</form>
+<br>
+<br>
+<br>
+
+<div style="display: none">
+    <form id="form-template" class="form" action="${url('comments.create')}" method="post">
+        <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+        <input type="hidden" name="issue" value="" />
+
+        <div class="form-group">
+            <textarea name="content" class="form-control"></textarea>
+        </div>
+        % for field in comment_form.hidden_fields():
+            ${forms.hidden_field(field)}
+        % endfor
+        <input type="submit" value="댓글 쓰기" class="btn btn-default btn-sm">
+    </form>
+</div>
+
+##<div class="sidebar_issue">
+##    <h5 style="margin-top: 10px">태그 연관 이슈</h5>
+##    <ul class="sidebar_issue">
+##        % for tag in issue.tags.all():
+##        <li class="sidebar_issue" style="margin-top: 6px;"><a style="font-size: 9pt;" href="/issues?tag=${tag.name}">${tag.name}</a></li>
+##        % for aIssue in tag.issue_set.all():
+##        % if issue.id != aIssue.id:
+##        <li style="margin-left: 10px;"><a href="/issues/${aIssue.id}" class="short">${aIssue.title}</a></li>
+##        % endif
+##        % endfor
+##        % endfor
+##    </ul>
+##    <div id="cell-items"></div>
+##<script language="javascript">
+##    cellList = [];
+##    recentIdx = 0;
+##
+##    $.ajax({
+##        url: '/historic/_/scrap',
+##        data: ({keyword: '${"".join([e.name for e in issue.tags.all()])}'} ),
+##        success: function(msgs) {
+##            for (var idx in msgs) {
+##                var msg = msgs[idx];
+##                cellList.push(msg);
+##                msg.id = recentIdx; recentIdx++;
+##                var templateCell = _.template($('#item-template').html());
+##                $("#cell-items").append(templateCell(msg));
+##            }
+##            $('.to-comment').click(function() {
+##                for (idx in cellList) {
+##                    msg = cellList[idx];
+##                    if (msg.id == this.id) {
+##                        var editor = CKEDITOR.instances.editor;
+##                        var templateCell = _.template($('#comment-item-template').html());
+##                        editor.insertHtml( templateCell(msg));
+##                        $.scrollTo($('#cke_editor'), 0)
+##                        editor.focus();
+##                        return;
+##                    }
+##                }
+##            });
+##        },
+##        failure: function(msg) {
+##            alert(msg);
+##        }
+##    });
+##</script>
+##
+##</div>

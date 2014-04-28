@@ -1,0 +1,44 @@
+<%inherit file="/base.html"/>
+<%block name="head">
+${parent.head()}
+<style type="text/css">
+table {border-collapse: collapse; width: 100%}
+table td { border-bottom: 1px solid #562C1C; }
+table th { text-align: left; }
+.thumbnail_cell { width: 150px; padding: 10px }
+.issue_title { text-align: left; background-color: #FFEECC; border: 1px solid #562C1C; font-size: 36px; color: #000000; }
+</style>
+<script type="text/javascript">
+    function sub() {
+        var tags = document.getElementById('tags');
+        var check_arr = tags.tag;
+        var conf = false;
+        for (var i = 0; i < check_arr.length; i++) {
+            if (check_arr[i].checked) {
+                conf = true;
+            }
+        }
+        if (!conf) {
+            alert("하나 이상의 태그에 체크 하세요.");
+            return false;
+        } else {
+            return true;
+        }
+    }
+</script>
+</%block>
+<form id="tags" method="GET" onsubmit="return sub();" action="/issues">
+    <table style="margin-bottom: 30px;">
+        <tbody>
+        % for tag in tags:
+        <tr>
+            <td class="thumbnail_cell"><input type="checkbox" id="tag_${tag.id}" name="tag" value="${tag.name}"/> <label for="tag_${tag.id}">${tag.name}</label></td>
+            <td class="">${tag.issue_set.count()}</td>
+        </tr>
+        % endfor
+        </tbody>
+    </table>
+<div style="text-align: center">
+    <input type="submit" value="연관 이슈 찾기">
+</div>
+</form>

@@ -1,0 +1,21 @@
+<%inherit file="/layout.html"/>
+<%block name="head">
+<script type="text/javascript" src="/static/ckeditor/ckeditor.js"></script>
+<script type="text/javascript">
+</script>
+</%block>
+
+<h1>새로운 이슈 올리기</h1>
+
+<%namespace name="forms" file="/common/bootstrap_form.html" inheritable="True"/>
+
+<form class="form" action="${url('issues.create')}" method="post">
+    <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+    % for field in form.hidden_fields():
+        ${forms.hidden_field(field)}
+    % endfor
+    % for field in form.visible_fields():
+        ${forms.form_group(field)}
+    % endfor
+    <input type="submit" value="등록" class="btn btn-success">
+</form>

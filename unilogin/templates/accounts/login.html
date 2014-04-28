@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Social Login</title>
+<link rel="stylesheet" type="text/css" href="${static('packages/bootstrap/dist/css/bootstrap.css')}">
+<link rel="stylesheet" type="text/css" href="${static('unilogin/social-buttons.css')}">
+<link rel="stylesheet" type="text/css" href="${static('unilogin/font-awesome.css')}">
+<link rel="stylesheet" type="text/css" href="${static('unilogin/style.css')}">
+</head>
+
+<body class="login-page">
+<div class="container">
+    <h1><i class="icon-signin"></i> Login</h1>
+    % if messages:
+        % for message in messages:
+            <div class="alert alert-warning">
+                ${message}
+            </div>
+        % endfor
+    % endif
+    <div class="panel panel-info loginbox">
+        <p class="panel-heading">You can login with these social login providers. Select one of buttons below.</p>
+        <ul class="social-buttons">
+            <li>
+                <a title="Connect with Facebook" rel="nofollow" href="${url('social:begin', 'facebook')}?next=${request.REQUEST.get('next', '/')}" class="btn btn-large btn-facebook"><i class="icon-facebook"></i> | Facebook</a>
+            </li>
+            <li>
+                <a title="Connect with Twitter" rel="nofollow" href="${url('social:begin', 'twitter')}?next=${request.REQUEST.get('next', '/')}" class="btn btn-large btn-twitter"><i class="icon-twitter"></i> | Twitter</a>
+            </li>
+            <li>
+                <a title="Connect with google" rel="nofollow" href="${url('social:begin', 'google')}?next=${request.REQUEST.get('next', '/')}" class="btn btn-large btn-google-plus"><i class="icon-google-plus"></i> | Google OpenID</a>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="panel panel-info loginbox">
+        <p class="panel-heading">You can also login with your OpenID account.</p>
+          <form class="form-inline" action="${ url('social:begin', 'openid')}?next=${request.REQUEST.get('next', '/')}" method="post">
+            <input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+            <input type="hidden" value="${request.REQUEST.get('next', '/')}" name="next" />
+            <div class="form-group">
+              <input id="openid_identifier" class="openid-identifier form-control" type="text" value="" name="openid_identifier" />
+            </div>
+            <div class="form-group">
+              <input id="openid_submit" type="submit" value="OpenID Login" class="btn btn-primary" />
+            </div>
+          </form>
+          <br>
+    	</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

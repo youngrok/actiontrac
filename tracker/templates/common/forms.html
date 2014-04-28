@@ -1,0 +1,249 @@
+<%page args="path"/>
+
+<%def name="form_field(field)">
+    % if field.field.widget.__class__.__name__ == 'DelegateInput':
+        ${getattr(self, 'form_' + field.field.widget.widget_name)(field)}
+    % else:
+
+        <div class="control-group ${'error' if field.errors else ''} ${'required' if field.field.required else ''}">
+            % if 'is_checkbox' in field:
+                        <div class="controls">
+                            <label class="checkbox">
+                                ${ field } <span>${ field.label }</span>
+                            </label>
+    
+                            % for error in field.errors:
+                                <span class="help-inline">${ error }</span>
+                            % endfor
+    
+                            % if field.help_text:
+                            <p class="help-block">
+                                ${ field.help_text }
+                            </p>
+                            % endif
+                        </div>
+            % else:
+                <label class="control-label" for="${ field.auto_id }">${ field.label }</label>
+                <div class="controls">
+                    % if field.field.widget.__class__.__name__ == 'RadioSelect':
+                        ${radio(field.name, field.field.choices, selected=field.value())}
+                    % elif field.field.widget.__class__.__name__ == 'Select':
+                        ${select(field_name=field.name, choices=field.field.choices, selected=field.value(), ajax=True)}
+                    % elif field.label == u'선수금':
+                        <div class="input-prepend input-append">
+                            <input class="span2" id="id_down_payment" type="text" name="down_payment" maxlength="19">
+                            <span class="add-on">원</span>
+                        </div>
+                        <a href="#" class="btn manwon_down_payment" onclick="$('#id_down_payment')[0].value += '0000';return false;">만원</a>
+                    % elif field.label == u'견적금액':
+                        <div class="input-prepend input-append">
+                            <input class="span2" id="id_price" type="text" name="price">
+                            <span class="add-on">원</span>
+                        </div>
+                        <a href="#" class="btn manwon_price" onclick="$('#id_price')[0].value += '0000';return false;">만원</a>
+                    % elif field.label == u'월납입금':
+                        <div class="input-prepend input-append">
+                            <input class="span2" id="id_monthly_payment" type="text" name="monthly_payment">
+                            <span class="add-on">원</span>
+                        </div>
+                        <a href="#" class="btn manwon_price" onclick="$('#id_monthly_payment')[0].value += '0000';return false;">만원</a>
+                    % else:
+                        ${field}
+                    % endif
+    
+                    % for error in field.errors:
+                        <span class="help-inline">${ error }</span>
+                    % endfor
+                    % if field.help_text:
+                    <p class="help-block">
+                        ${ field.help_text }
+                    </p>
+                    % endif
+                </div>
+            % endif
+        </div>
+    % endif
+</%def>
+
+<%def name="form_price(field)">
+    <%self:control_group field="${field}">
+        ${self.price(field.name, field.value() or '', field.field.widget.prepend, field.field.widget.append)}
+    </%self:control_group>
+</%def>
+
+<%def name="price(name, value, prepend=None, append=None)">
+    <div class="${'input-prepend' if prepend else ''} ${'input-append' if append else ''}">
+        % if prepend:
+            <span class="add-on">${prepend}</span>
+        % endif
+        <input id="id_${name}" type="text" name="${name}" value="${value}">
+        % if append:
+            <span class="add-on">${append}</span>
+        % endif
+    </div>
+</%def>
+
+<%def name="radio(field_name, choices, selected=None)">
+    % for choice in choices:
+        <label class="radio inline">
+            <input type="radio" id="id_${field_name}_${choice[0]}" name="${field_name}" value="${choice[0]}"
+                   ${'checked="checked"' if selected == choice[0] else ''}> ${choice[1]}
+        </label>
+    % endfor
+</%def>
+
+<%def name="checkbox(field_name, choices, selected)">
+    % for choice in choices:
+        <label class="radio inline">
+            <input type="checkbox" id="id_${field_name}_${choice[0]}" name="${field_name}" value="${choice[0]}"
+                   ${'checked="checked"' if choice[0] in selected else ''}>
+            <label for="id_${field_name}_${choice[0]}"><span></span>${choice[1]}</label>
+        </label>
+    % endfor
+</%def>
+
+<%def name="select(field_name, choices, selected=None, empty_label=None, ajax=False, multiple=False)">
+    <select name=${field_name} ${'multiple style="height:100px"' if multiple else ''}>
+    % if empty_label:
+        <option value="">${empty_label}</option>
+    % endif
+        
+    % if not ajax:
+        % for choice in choices:
+            <option value="${choice[0]}"
+                    ${'selected' if unicode(selected) == unicode(choice[0]) else ''}>${choice[1]}</option>
+        % endfor
+    % endif
+    </select>
+</%def>
+
+<%def name="form_radio(field)">
+    <%self:control_group field="${field}">
+        ${self.radio(field.name, field.field.choices, selected=field.value())}
+    </%self:control_group>
+</%def>
+
+<%def name="form_select(field)">
+    <%self:control_group field="${field}">
+        ${self.select(field.name, field.field.choices, selected=field.value())}
+    </%self:control_group>
+</%def>
+
+<%def name="form_currency(field)">
+    <%self:control_group field="${field}">
+        <div class="input-prepend input-append">
+            <input class="span2" id="id_${field.name}" type="text" name="${field.name}" value=${field.value() or ''}>
+            <span class="add-on">원</span>
+        </div>
+        <a href="#" class="btn manwon_down_payment" onclick="$('#id_down_payment')[0].value += '0000';return false;">만원</a>
+        
+    </%self:control_group>
+</%def>
+
+<%def name="form_textarea(field, **kwargs)">
+    <%self:control_group field="${field}">
+        <textarea name="${field.label}"
+            % for key in kwargs:
+                ${key}="${kwargs[key]}"
+            % endfor 
+        >${field.value() or ''}</textarea>
+    </%self:control_group>
+</%def>
+
+<%def name="form_date(field, **kwargs)">
+    <%self:control_group field="${field}">
+        <input type="text" name="${field.name}" value="${field.value() or ''}" class="date"
+            % for key in kwargs:
+                ${key}="${kwargs[key]}"
+            % endfor 
+        >
+    </%self:control_group>
+</%def>
+
+<%def name="form_field_widget(field)">
+    <%self:control_group field="${field}">
+        ${field}
+    </%self:control_group>
+</%def>
+
+% if form.errors:
+    <div class="alert alert-error">
+    ${form.errors}
+    </div>
+% endif
+<form class="form-horizontal" action="${path}" method="POST" ${'enctype="multipart/form-data"' if form.is_multipart else ''}>
+<input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+<fieldset>
+% if form.non_field_errors():
+    <div class="alert alert-error">
+        <a class="close" data-dismiss="alert">&times;</a>
+        % for non_field_error in form.non_field_errors:
+             ${ non_field_error }
+        % endfor
+    </div>
+% endif
+
+% for field in form.hidden_fields():
+    ${ field }
+% endfor
+
+% for field in form.visible_fields():
+    ${form_field(field)}
+% endfor
+
+<div class="commands pagination-centered">
+    <input type="submit" value="등록" class="btn btn-success btn-large btn-wide">
+</div>
+</fieldset>
+</form>
+
+
+<%def name="control_group(field)">
+<div class="control-group ${'error' if field.errors else ''} ${'required' if field.field.required else ''}">
+    <label class="control-label" for="${ field.auto_id }">${'*' if field.field.required else ''}${ field.label }</label>
+    <div class="controls">
+        ${caller.body()}
+
+        % for error in field.errors:
+            <span class="help-inline">${ error }</span>
+        % endfor
+        
+        % if field.help_text:
+        <p class="help-block">
+            ${ field.help_text }
+        </p>
+        % endif
+    </div>
+</div>
+</%def>
+
+## under development
+<%def name="form_horizontal(form)">
+% if form.errors:
+    <div class="alert alert-error">
+    ${form.errors}
+    </div>
+% endif
+<form class="form-horizontal" action="${path}" method="POST">
+<input type="hidden" name="csrfmiddlewaretoken" value="${csrf_token}" />
+<fieldset>
+% if form.non_field_errors():
+    <div class="alert alert-error">
+        <a class="close" data-dismiss="alert">&times;</a>
+        % for non_field_error in form.non_field_errors:
+             ${ non_field_error }
+        % endfor
+    </div>
+% endif
+
+% for field in form.hidden_fields():
+    ${ field }
+% endfor
+
+${caller.body()}
+<div class="commands pagination-centered">
+    <input type="submit" value="Save" class="btn btn-primary">
+</div>
+</fieldset>
+</form>
+</%def>

@@ -1,0 +1,51 @@
+<%inherit file="/layout.html"/>
+<%block name="head">
+</%block>
+% if 'tag' in request.GET:
+<div>태그 :
+    % for tag in request.GET.getlist('tag'):
+    ${tag}
+    % endfor
+</div>
+% endif
+<a href="${url('issues.new')}" class="btn btn-primary">이슈 올리기</a>
+<hr>
+% if objects.count() != 0:
+<ul class="issues">
+    % for issue in objects:
+        <li class="">
+            <div class="col-xs-1 number-box">
+                <div class="number">${issue.vote_set.count()}</div>
+                <div class="number-label">투표</div>
+            </div>
+            <div class="col-xs-1 number-box">
+                <div class="number">${issue.action_set.count()}</div>
+                <div class="number-label">행동</div>
+            </div>
+            <div class="col-xs-1 number-box">
+                <div class="number">${issue.comment_set.count()}</div>
+                <div class="number-label">댓글</div>
+            </div>
+            <div class="col-xs-9">
+                <h3>
+                    <a href="/issues/${issue.id}">${issue.title}</a>
+                </h3>
+                <div style="clear: left; float:right; margin: 5px;">
+                    % if issue.writer.profile.profile_image:
+                        <img class="profile-small" src="${issue.writer.profile.profile_image}">
+                    % endif
+                    <span class="writer_info">${issue.writer.profile.name}</span> <span class="date">${humanize.naturaltime(issue.updated)}</span>
+                </div>
+                <div class="tags">
+                    % for tag in issue.tags.all():
+                        <a href="/issues?tag=${tag.name}">${tag.name}</a>
+                    % endfor
+                </div>
+            </div>
+            <hr style="clear: both">
+        </li>
+    % endfor
+</ul>
+% else:
+    <h1 class="title">이슈가 없습니다.</h1>
+% endif

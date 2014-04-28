@@ -1,0 +1,15 @@
+<%def name="show_profile(user)">
+    % if user.profile.profile_image_url:
+        <img class="profile-image image-rounded" src="${user.profile.profile_image_url}">
+    % endif
+    ${user.profile.nickname_for_wiki(wiki)}
+</%def>
+
+<%def name="show_profile_link(user)">
+    <a href="/${user.profile.nickname_for_wiki(wiki)}">
+        % if user.profile.profile_image_url:
+            <img class="profile-image image-rounded" src="${user.profile.profile_image_url}">
+        % endif
+        ${user.profile.nickname_for_wiki(wiki)}
+    </a>
+</%def>

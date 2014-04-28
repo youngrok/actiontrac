@@ -1,0 +1,12 @@
+.openid-identifier {background:url("openid-large.png") center left no-repeat; padding-left:32px; font-size: 100%;}
+ .login-page #openid-url-input-area {margin-top: 30px;}
+.loginbox {text-align: center; }
+.loginbox ul {text-align: center; list-style: none;}
+.loginbox li {margin: 10px;}
+.loginbox form { margin: 0 20px;}
+.container {padding: 10px;}
+
+.social-buttons { overflow: hidden;}
+.social-buttons li { float: left}
+.social-buttons .btn { width: 150px; text-align: left;}
+.social-buttons .btn i { width: 14px; display: inline-block;}
