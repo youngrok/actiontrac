@@ -1,0 +1,13 @@
+django
+django-annoying
+south
+djangox-route
+djangox-mako
+django-extensions
+requests
+mysql-python
+mako
+python-social-auth
+python-dateutil
+ipython
+facebook-sdk
