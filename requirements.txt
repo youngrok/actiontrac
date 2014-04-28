@@ -11,3 +11,4 @@ python-social-auth
 python-dateutil
 ipython
 facebook-sdk
+simplejson
